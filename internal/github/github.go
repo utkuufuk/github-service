@@ -37,25 +37,23 @@ func (c Client) FetchAssignedIssues(ctx context.Context) ([]trello.Card, error) 
 	return entrello.CreateCardsFromIssues(nonPullRequestIssues)
 }
 
-func (c Client) FetchOtherPullRequests() func(ctx context.Context) ([]trello.Card, error) {
-	return func(ctx context.Context) ([]trello.Card, error) {
-		pullRequests := make([]*github.PullRequest, 0)
-		for _, repo := range config.SubscribedRepos {
-			prs, _, err := c.client.PullRequests.List(ctx, config.OrgName, repo, nil)
-			if err != nil {
-				return nil, fmt.Errorf("could not retrieve pull requests from %s/%s: %w", config.OrgName, repo, err)
-			}
-			pullRequests = append(pullRequests, prs...)
+func (c Client) FetchOtherPullRequests(ctx context.Context) ([]trello.Card, error) {
+	pullRequests := make([]*github.PullRequest, 0)
+	for _, repo := range config.SubscribedRepos {
+		prs, _, err := c.client.PullRequests.List(ctx, config.OrgName, repo, nil)
+		if err != nil {
+			return nil, fmt.Errorf("could not retrieve pull requests from %s/%s: %w", config.OrgName, repo, err)
 		}
-
-		otherPullRequests := make([]*github.PullRequest, 0)
-		for _, i := range pullRequests {
-			if !*i.Draft && *i.User.Login != config.UserName && (i.Assignee == nil || *i.Assignee.Login != config.UserName) {
-				otherPullRequests = append(otherPullRequests, i)
-			}
-		}
-		return entrello.CreateCardsFromPullRequests(otherPullRequests)
+		pullRequests = append(pullRequests, prs...)
 	}
+
+	otherPullRequests := make([]*github.PullRequest, 0)
+	for _, i := range pullRequests {
+		if !*i.Draft && *i.User.Login != config.UserName && (i.Assignee == nil || *i.Assignee.Login != config.UserName) {
+			otherPullRequests = append(otherPullRequests, i)
+		}
+	}
+	return entrello.CreateCardsFromPullRequests(otherPullRequests)
 }
 
 func (c Client) FetchOtherPullRequestsAssignedToMe(ctx context.Context) ([]trello.Card, error) {

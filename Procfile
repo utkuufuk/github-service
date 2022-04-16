@@ -1,1 +1,1 @@
-web: bin/github-service
+web: bin/server
