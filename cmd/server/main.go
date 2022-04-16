@@ -15,8 +15,8 @@ func main() {
 	client := github.GetClient()
 	http.HandleFunc("/entrello", handleGetRequest(client.FetchAssignedIssues))
 	http.HandleFunc("/entrello/prlo", handleGetRequest(client.FetchOtherPullRequests))
-	http.HandleFunc("/entrello/prlme", handleGetRequest(client.FetchMyPullRequests))
-	http.HandleFunc("/entrello/prlmy", handleGetRequest(client.FetchOtherPullRequestsAssignedToMe))
+	http.HandleFunc("/entrello/prlme", handleGetRequest(client.FetchOtherPullRequestsAssignedToMe))
+	http.HandleFunc("/entrello/prlmy", handleGetRequest(client.FetchMyPullRequests))
 	http.ListenAndServe(fmt.Sprintf(":%d", config.Port), nil)
 }
 
