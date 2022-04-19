@@ -1,0 +1,58 @@
+before:
+  hooks:
+    - go mod download
+
+builds:
+- id: github-service-server
+  main: ./cmd/server
+  binary: server
+  env:
+  - CGO_ENABLED=0
+  goos:
+    - linux
+    - darwin
+    - windows
+  goarch:
+    - amd64
+    - arm
+    - arm64
+  goarm: [6, 7]
+
+- id: github-service-cli
+  main: ./cmd/cli
+  binary: cli
+  env:
+  - CGO_ENABLED=0
+  goos:
+    - linux
+    - darwin
+    - windows
+  goarch:
+    - amd64
+    - arm
+    - arm64
+  goarm: [6, 7]
+
+archives:
+- id: github-service-archive
+  name_template: |-
+    github{{ .Tag }}_{{ .Os }}_{{ .Arch -}}
+    {{- with .Arm -}}
+      {{- if (eq . "6") -}}hf
+      {{- else -}}v{{- . -}}
+      {{- end -}}
+    {{- end -}}
+  builds:
+    - github-service-server
+    - github-service-cli
+  replacements:
+    386: i386
+    amd64: x86_64
+  format_overrides:
+    - goos: windows
+      format: zip
+  files: ["LICENSE"]
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
