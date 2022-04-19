@@ -73,7 +73,7 @@ A new [Docker image](https://github.com/utkuufuk?tab=packages&repo_name=github-s
 
     # CLI
     docker run --rm \
-        -v </absolute/path/to/config.json>:/bin/config.json \
+        --env-file </absolute/path/to/.env> \
         ghcr.io/utkuufuk/github-service/image:latest \
         ./cli
     ```
