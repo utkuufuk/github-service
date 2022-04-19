@@ -36,7 +36,7 @@ builds:
 archives:
 - id: github-service-archive
   name_template: |-
-    github{{ .Tag }}_{{ .Os }}_{{ .Arch -}}
+    github_service_{{ .Tag }}_{{ .Os }}_{{ .Arch -}}
     {{- with .Arm -}}
       {{- if (eq . "6") -}}hf
       {{- else -}}v{{- . -}}
