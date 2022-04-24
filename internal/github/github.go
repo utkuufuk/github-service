@@ -12,14 +12,22 @@ import (
 )
 
 type Client struct {
-	client *github.Client
+	client          *github.Client
+	subscribedRepos []string
+	orgName         string
+	userName        string
 }
 
-func GetClient() Client {
-	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: config.PersonalAccessToken})
+func GetClient(cfg config.GitHubConfig) Client {
+	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: cfg.PersonalAccessToken})
 	tc := oauth2.NewClient(context.Background(), ts)
 	client := github.NewClient(tc)
-	return Client{client}
+	return Client{
+		client,
+		cfg.SubscribedRepos,
+		cfg.OrgName,
+		cfg.UserName,
+	}
 }
 
 func (c Client) FetchAssignedIssues(ctx context.Context) ([]trello.Card, error) {
@@ -39,17 +47,17 @@ func (c Client) FetchAssignedIssues(ctx context.Context) ([]trello.Card, error) 
 
 func (c Client) FetchOtherPullRequests(ctx context.Context) ([]trello.Card, error) {
 	pullRequests := make([]*github.PullRequest, 0)
-	for _, repo := range config.SubscribedRepos {
-		prs, _, err := c.client.PullRequests.List(ctx, config.OrgName, repo, nil)
+	for _, repo := range c.subscribedRepos {
+		prs, _, err := c.client.PullRequests.List(ctx, c.orgName, repo, nil)
 		if err != nil {
-			return nil, fmt.Errorf("could not retrieve pull requests from %s/%s: %w", config.OrgName, repo, err)
+			return nil, fmt.Errorf("could not retrieve pull requests from %s/%s: %w", c.orgName, repo, err)
 		}
 		pullRequests = append(pullRequests, prs...)
 	}
 
 	otherPullRequests := make([]*github.PullRequest, 0)
 	for _, i := range pullRequests {
-		if !*i.Draft && *i.User.Login != config.UserName && (i.Assignee == nil || *i.Assignee.Login != config.UserName) {
+		if !*i.Draft && *i.User.Login != c.userName && (i.Assignee == nil || *i.Assignee.Login != c.userName) {
 			otherPullRequests = append(otherPullRequests, i)
 		}
 	}
@@ -57,16 +65,16 @@ func (c Client) FetchOtherPullRequests(ctx context.Context) ([]trello.Card, erro
 }
 
 func (c Client) FetchOtherPullRequestsAssignedToMe(ctx context.Context) ([]trello.Card, error) {
-	assignedIssues, _, err := c.client.Issues.ListByOrg(ctx, config.OrgName, &github.IssueListOptions{
+	assignedIssues, _, err := c.client.Issues.ListByOrg(ctx, c.orgName, &github.IssueListOptions{
 		Filter: "assigned",
 	})
 	if err != nil {
-		return nil, fmt.Errorf("could not retrieve assigned %s issues: %w", config.OrgName, err)
+		return nil, fmt.Errorf("could not retrieve assigned %s issues: %w", c.orgName, err)
 	}
 
 	assignedPullRequests := make([]*github.Issue, 0)
 	for _, i := range assignedIssues {
-		if i.IsPullRequest() && *i.User.Login != config.UserName {
+		if i.IsPullRequest() && *i.User.Login != c.userName {
 			assignedPullRequests = append(assignedPullRequests, i)
 		}
 	}
@@ -74,7 +82,7 @@ func (c Client) FetchOtherPullRequestsAssignedToMe(ctx context.Context) ([]trell
 }
 
 func (c Client) FetchMyPullRequests(ctx context.Context) ([]trello.Card, error) {
-	createdIssues, _, err := c.client.Issues.ListByOrg(ctx, config.OrgName, &github.IssueListOptions{
+	createdIssues, _, err := c.client.Issues.ListByOrg(ctx, c.orgName, &github.IssueListOptions{
 		Filter: "created",
 	})
 	if err != nil {

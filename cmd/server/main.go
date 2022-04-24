@@ -5,19 +5,32 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/utkuufuk/entrello/pkg/trello"
 	"github.com/utkuufuk/github-service/internal/config"
 	"github.com/utkuufuk/github-service/internal/github"
+	"github.com/utkuufuk/github-service/internal/logger"
 )
 
+var cfg config.Config
+
+func init() {
+	var err error
+	cfg, err = config.ParseServerConfig()
+	if err != nil {
+		logger.Error("Failed to parse config: %v", err)
+		os.Exit(1)
+	}
+}
+
 func main() {
-	client := github.GetClient()
+	client := github.GetClient(cfg.GitHub)
 	http.HandleFunc("/entrello", handleGetRequest(client.FetchAssignedIssues))
 	http.HandleFunc("/entrello/prlo", handleGetRequest(client.FetchOtherPullRequests))
 	http.HandleFunc("/entrello/prlme", handleGetRequest(client.FetchOtherPullRequestsAssignedToMe))
 	http.HandleFunc("/entrello/prlmy", handleGetRequest(client.FetchMyPullRequests))
-	http.ListenAndServe(fmt.Sprintf(":%d", config.Port), nil)
+	http.ListenAndServe(fmt.Sprintf(":%d", cfg.Port), nil)
 }
 
 func handleGetRequest(
@@ -26,6 +39,11 @@ func handleGetRequest(
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+
+		if cfg.Secret != "" && r.Header.Get("X-Api-Key") != cfg.Secret {
+			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
 
