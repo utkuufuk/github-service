@@ -13,19 +13,18 @@ import (
 
 type Client struct {
 	client          *github.Client
-	subscribedRepos []string
 	orgName         string
+	subscribedRepos []string
 	userName        string
 }
 
 func GetClient(cfg config.GitHubConfig) Client {
 	ts := oauth2.StaticTokenSource(&oauth2.Token{AccessToken: cfg.PersonalAccessToken})
 	tc := oauth2.NewClient(context.Background(), ts)
-	client := github.NewClient(tc)
 	return Client{
-		client,
-		cfg.SubscribedRepos,
+		github.NewClient(tc),
 		cfg.OrgName,
+		cfg.SubscribedRepos,
 		cfg.UserName,
 	}
 }
