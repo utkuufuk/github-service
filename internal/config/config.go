@@ -50,7 +50,7 @@ func ParseGitHubConfig() (cfg GitHubConfig, err error) {
 
 func ParseServerConfig() (cfg Config, err error) {
 	ghCfg, err := ParseGitHubConfig()
-    cfg.GitHub = ghCfg
+	cfg.GitHub = ghCfg
 
 	port := os.Getenv("PORT")
 	cfg.Port, err = strconv.Atoi(port)
