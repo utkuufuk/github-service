@@ -1,4 +1,8 @@
 # github-service
+[![CI](https://github.com/utkuufuk/github-service/actions/workflows/ci.yml/badge.svg)](https://github.com/utkuufuk/github-service/actions/workflows/ci.yml)
+![Latest Release](https://img.shields.io/github/release/utkuufuk/github-service.svg)
+[![Coverage Status](https://coveralls.io/repos/github/utkuufuk/github-service/badge.svg)](https://coveralls.io/github/utkuufuk/github-service)
+
 A simple service to query GitHub issues & pull requests.
 * See [Server Mode](#server-mode) for using it as an [entrello](https://github.com/utkuufuk/entrello) service.
 * See [CLI Mode](#cli-mode) for using it as a CLI tool.
