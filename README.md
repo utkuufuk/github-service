@@ -3,12 +3,6 @@ A simple service to query GitHub issues & pull requests.
 * See [Server Mode](#server-mode) for using it as an [entrello](https://github.com/utkuufuk/entrello) service.
 * See [CLI Mode](#cli-mode) for using it as a CLI tool.
 
-## Configuration
-Put your environment variables in a file called `.env`.
-
-See `.env.example` for reference.
-
-
 ## Server Mode
 Start the server:
 ```sh
@@ -47,6 +41,19 @@ go run ./cmd/cli prlo
 go run ./cmd/cli prlmy
 go run ./cmd/cli prlme
 ```
+
+## Configuration
+Put your environment variables in a file called `.env`, based on `.env.example`.
+
+| Environment Variable | Description |
+|-|-|
+| `PERSONAL_ACCESS_TOKEN` | GitHub personal access token |
+| `ORG_NAME` | GitHub organization name (required for `prlo`, `prlmy` and `prlme`) |
+| `USER_NAME` | GitHub user name (required for `prlo` and `prlme`) |
+| `SUBSCRIBED_REPOS` | Subscribed GitHub repositories (required for `prlo`) |
+| `PORT` | HTTP port (server mode only) |
+| `SECRET` | API secret (server mode only, optional) |
+
 
 ## Running With Docker
 A new [Docker image](https://github.com/utkuufuk?tab=packages&repo_name=github-service) will be created upon each [release](https://github.com/utkuufuk/github-service/releases).

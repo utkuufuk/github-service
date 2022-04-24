@@ -1,50 +1,63 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/joho/godotenv"
-	"github.com/utkuufuk/github-service/internal/logger"
 )
 
-var (
-	Port                int
-	PersonalAccessToken string
+type GitHubConfig struct {
 	OrgName             string
-	UserName            string
+	PersonalAccessToken string
 	SubscribedRepos     []string
-)
+	UserName            string
+}
 
-func init() {
-	var err error
+type Config struct {
+	// GitHub config
+	GitHub GitHubConfig
+
+	// additional server mode config
+	Port   int
+	Secret string
+}
+
+func ParseGitHubConfig() (cfg GitHubConfig, err error) {
 	godotenv.Load()
 
+	cfg.PersonalAccessToken = os.Getenv("PERSONAL_ACCESS_TOKEN")
+	if cfg.PersonalAccessToken == "" {
+		return cfg, fmt.Errorf("PERSONAL_ACCESS_TOKEN not set")
+	}
+
+	cfg.OrgName = os.Getenv("ORG_NAME")
+	if cfg.OrgName == "" {
+		return cfg, fmt.Errorf("ORG_NAME not set")
+	}
+
+	cfg.UserName = os.Getenv("USER_NAME")
+	if cfg.UserName == "" {
+		return cfg, fmt.Errorf("USER_NAME not set")
+	}
+
+	cfg.SubscribedRepos = strings.Split(os.Getenv("SUBSCRIBED_REPOS"), ",")
+
+	return cfg, nil
+}
+
+func ParseServerConfig() (cfg Config, err error) {
+	ghCfg, err := ParseGitHubConfig()
+	cfg.GitHub = ghCfg
+
 	port := os.Getenv("PORT")
-	Port, err = strconv.Atoi(port)
+	cfg.Port, err = strconv.Atoi(port)
 	if err != nil {
-		logger.Error("PORT not set")
-		os.Exit(1)
+		return cfg, fmt.Errorf("PORT not set")
 	}
 
-	PersonalAccessToken = os.Getenv("PERSONAL_ACCESS_TOKEN")
-	if PersonalAccessToken == "" {
-		logger.Error("PERSONAL_ACCESS_TOKEN not set")
-		os.Exit(1)
-	}
-
-	OrgName = os.Getenv("ORG_NAME")
-	if OrgName == "" {
-		logger.Error("ORG_NAME not set")
-		os.Exit(1)
-	}
-
-	UserName = os.Getenv("USER_NAME")
-	if UserName == "" {
-		logger.Error("USER_NAME not set")
-		os.Exit(1)
-	}
-
-	SubscribedRepos = strings.Split(os.Getenv("SUBSCRIBED_REPOS"), ",")
+	cfg.Secret = os.Getenv("SECRET")
+	return cfg, nil
 }

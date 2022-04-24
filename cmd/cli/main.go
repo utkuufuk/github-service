@@ -7,11 +7,24 @@ import (
 	"os"
 
 	"github.com/utkuufuk/entrello/pkg/trello"
+	"github.com/utkuufuk/github-service/internal/config"
 	"github.com/utkuufuk/github-service/internal/github"
+	"github.com/utkuufuk/github-service/internal/logger"
 )
 
+var gitHubConfig config.GitHubConfig
+
+func init() {
+	var err error
+	gitHubConfig, err = config.ParseGitHubConfig()
+	if err != nil {
+		logger.Error("Failed to parse config: %v", err)
+		os.Exit(1)
+	}
+}
+
 func main() {
-	client := github.GetClient()
+	client := github.GetClient(gitHubConfig)
 
 	if len(os.Args) == 1 {
 		displayCards(client.FetchAssignedIssues)
