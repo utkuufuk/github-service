@@ -39,7 +39,7 @@ func main() {
 	case "prlme":
 		displayCards(client.FetchOtherPullRequestsAssignedToMe)
 	default:
-		log.Fatalf("Uncrecognized command: %s", os.Args[2])
+		logger.Error("Uncrecognized command: %s", os.Args[2])
 	}
 }
 
